@@ -23,11 +23,54 @@
 ## 📂 プロジェクト構成
 
 ```
-├── HyebinKwon_MISSION2.ipynb   # メインコード（Colab）
-├── data/                       # （任意）画像・ラベルデータ
-├── pickle/                     # （任意）特徴量・結果ファイル
+├── DCC2024_Mission1-2-3_HyebinKwon.ipynb   # メインコード（Colab）
+├── data/                                   # 画像・ラベルデータ
+│ ├── image_example/ 
+│ └── label_example/            
+├── pickle/                                 # 特徴量・結果ファイル
+│ ├── m2_preprocessing.pkl
+│ ├── m3_feature_vectors_with_predictions.pkl
+├── docs/                                   #  分析結果・レポート
+│   ├── final_report_KR.pdf                   
 ├── README.md
 ```
+
+### 📁 データ構成
+本リポジトリには容量制限のため、全データではなく  
+一部のサンプルデータのみ含めています。
+#### image_example/
+- ファッション画像のサンプル
+- ファイル名に以下の情報を含む： 性別、スタイル、年代・カテゴリ情報
+
+例：T_01322_19_normcore_M.jpg
+
+#### label_example/
+- 各画像に対応するJSON形式のラベルデータ
+- 主に以下の情報を含む： 画像ID、スタイル情報、その他メタデータ
+
+➡️ Mission 2ではこのJSONデータを解析し、  ユーザー嗜好データを構築
+
+---
+
+### 📦 Pickleファイル説明
+本プロジェクトでは、大規模データ処理の効率化のため、  
+各処理ステップの結果をpickle形式で保存し、再利用可能にしています。
+#### `m2_preprocessing.pkl`
+* train_json_df_v2: 前処理済みのtrainラベルデータ
+* valid_json_df_v2: 前処理済みのvalidationラベルデータ
+* train_restructured_df: ユーザーごとの嗜好／非嗜好画像リスト
+* valid_restructured_df: validation用の嗜好データ
+
+➡️ 推薦システムにおけるユーザー×アイテム構造の入力データを生成
+
+#### `m3_feature_vectors_with_predictions.pkl`
+* train_vectors: ユーザー×クラス別の画像特徴ベクトル
+* valid_vectors: validation画像の特徴ベクトル
+* train_avg_vectors: クラスごとの平均特徴ベクトル
+* predictions: Top-Kベースの推薦結果
+* train_results / valid_results: マッチングされた画像情報
+
+➡️ 画像特徴に基づく推薦システムの中核結果
 
 ---
 
@@ -42,8 +85,6 @@
 
 ## 🧩 ミッション別の取り組みとインサイト
 
----
-
 ### 🔹 Mission 1. ファッション画像分類
 
 #### ✔ What I did
@@ -54,23 +95,17 @@
 * データ拡張、正規化、背景除去（Mask R-CNN）適用
 * Scheduler / Early Stopping / Optunaによる学習最適化
 
----
-
 #### ⚠ Challenges
 
 * クラスごとのデータ数の偏りによる**不均衡問題**
 * 数十GB規模の画像処理における**学習時間・メモリ負荷**
 * CNNの予測根拠が分かりにくい**ブラックボックス性**
 
----
-
 #### 🔧 How I solved it
 
 * クラス分布を事前に分析し、データ問題を明確化
 * DataLoader最適化、キャッシュ、augmentation等で学習効率改善
 * ハイパーパラメータチューニングにより性能向上を試行
-
----
 
 #### 💡 What I learned
 
@@ -89,15 +124,11 @@
 * 共通ユーザー基準でデータ再構成
 * 上位100名のユーザーに対する**スタイル嗜好テーブル構築**
 
----
-
 #### ⚠ Challenges
 
 * 大規模データ処理中の**missing label問題**
 * `merge` と `isin` による結果差異
 * 同一画像の重複マッチによるデータ歪み
-
----
 
 #### 🔧 How I solved it
 
@@ -105,8 +136,6 @@
 * 重複問題回避のため `isin()` を採用
 * train/valid間の同一画像を除外しデータリーク防止
   （同一画像の場合、類似度が1になり過大評価されるため）
-
----
 
 #### 💡 What I learned
 
@@ -125,23 +154,17 @@
 * cosine similarityを用いたitem-based filtering実装
 * 31クラス → **62クラス（嗜好/非嗜好含む）**へ拡張
 
----
-
 #### ⚠ Challenges
 
 * User-based: コールドスタート問題・データ希少性
 * Item-based: 個人化の限界
 * 平均ベクトル使用による特徴情報の損失
 
----
-
 #### 🔧 How I solved it
 
 * 画像特徴ベースのitem-based filtering採用
 * Top-1 / Top-3 / 嗜好(P/N)別に評価を分離
 * ユーザー-アイテム構造へデータ再設計
-
----
 
 #### 💡 What I learned
 
@@ -180,8 +203,6 @@
 * クラス不均衡対策未実施
 * 学習時間・計算資源の制約
 * 個人化推薦精度の不足
-
----
 
 ### 🔧 改善案
 
